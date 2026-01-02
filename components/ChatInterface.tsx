@@ -267,11 +267,11 @@ const ChatInterface: React.FC<Props> = ({ persona, settings, onError }) => {
   const stop = () => { controller?.abort(); setLoading(false); };
 
   return (
-    <div className={`flex flex-col h-full relative ${persona.bgColor}`}>
+    <div className="flex flex-col h-full relative bg-slate-900">
         {/* Messages Area */}
         <div className="flex-1 overflow-y-auto p-4 md:p-8 space-y-4">
             {messages.length === 0 && (
-                <div className="flex flex-col items-center justify-center h-full text-white/20 animate-fade-in">
+                <div className="flex flex-col items-center justify-center h-full text-white text-opacity-20">
                     <span className="text-8xl mb-4 grayscale opacity-20">{persona.icon}</span>
                     <h2 className="text-2xl font-bold">{persona.name}</h2>
                     <p className="text-sm mt-2">{persona.description}</p>
@@ -280,44 +280,44 @@ const ChatInterface: React.FC<Props> = ({ persona, settings, onError }) => {
             {messages.map(m => (
                 <MessageBubble key={m.id} msg={m} onEdit={handleEdit} onShowSteps={handleShowSteps} settings={settings} />
             ))}
-            {loading && <div className="text-center text-xs text-armin-accent animate-pulse">🔮 آرمین در حال تفکر فرازمینی...</div>}
+            {loading && <div className="text-center text-xs text-cyan-500 animate-pulse">🔮 آرمین در حال تفکر فرازمینی...</div>}
             <div ref={bottomRef} />
         </div>
 
         {/* Input Area */}
-        <div className="p-4 bg-slate-900/90 border-t border-white/10 backdrop-blur-xl relative z-20">
+        <div className="p-4 bg-slate-900 bg-opacity-90 border-t border-white border-opacity-10 relative z-20">
             {/* Attachment Preview */}
             {attachments.length > 0 && (
                 <div className="flex gap-2 mb-2 overflow-x-auto pb-2">
                     {attachments.map((a, i) => (
-                        <div key={i} className="bg-white/10 px-3 py-1 rounded-full text-xs flex items-center gap-2 text-white whitespace-nowrap">
-                            <span>{a.type === 'image' ? '🖼️' : '📄'}</span> {a.name} 
+                        <div key={i} className="bg-white bg-opacity-10 px-3 py-1 rounded-full text-xs flex items-center gap-2 text-white whitespace-nowrap">
+                            <span>{a.type === 'image' ? '🖼️' : '📄'}</span> {a.name}
                             <button onClick={() => setAttachments(prev => prev.filter((_, idx) => idx !== i))} className="hover:text-red-400">×</button>
                         </div>
                     ))}
                 </div>
             )}
-            
+
             <div className="max-w-4xl mx-auto flex items-end gap-3">
                 <input type="file" multiple ref={fileInputRef} className="hidden" onChange={handleFileSelect} accept="image/*,.pdf,.txt,.csv,.json,.js,.py" />
-                <button onClick={() => fileInputRef.current?.click()} className="p-3 bg-white/5 hover:bg-white/10 rounded-full text-white/70 transition-colors" title="آپلود فایل">
+                <button onClick={() => fileInputRef.current?.click()} className="p-3 bg-white bg-opacity-5 hover:bg-white hover:bg-opacity-10 rounded-full text-white text-opacity-70 transition-colors" title="آپلود فایل">
                     <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" /></svg>
                 </button>
-                
-                <textarea 
+
+                <textarea
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     onKeyDown={(e) => { if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); }}}
                     placeholder={`پیام به ${persona.name}... (برای جستجو بپرسید، برای تصویر بنویسید "تصویر بساز")`}
-                    className="flex-1 bg-white/5 border border-white/10 focus:border-armin-primary/50 rounded-2xl px-4 py-3 text-white max-h-32 min-h-[50px] resize-none focus:outline-none transition-all placeholder:text-white/20"
+                    className="flex-1 bg-white bg-opacity-5 border border-white border-opacity-10 focus:border-purple-500 focus:border-opacity-50 rounded-2xl px-4 py-3 text-white max-h-32 min-h-12 resize-none focus:outline-none transition-all placeholder:text-white placeholder:text-opacity-20"
                 />
 
                 {loading ? (
-                    <button onClick={stop} className="p-3 bg-red-500/80 hover:bg-red-600 rounded-full text-white shadow-[0_0_15px_rgba(239,68,68,0.4)] animate-pulse">
+                    <button onClick={stop} className="p-3 bg-red-500 bg-opacity-80 hover:bg-red-600 rounded-full text-white animate-pulse">
                         <span className="w-6 h-6 block font-bold text-center">■</span>
                     </button>
                 ) : (
-                    <button onClick={() => handleSend()} disabled={!input.trim() && !attachments.length} className="p-3 bg-gradient-to-r from-armin-primary to-armin-secondary rounded-full text-white shadow-[0_0_15px_rgba(124,58,237,0.4)] hover:scale-105 transition-transform disabled:opacity-50 disabled:hover:scale-100">
+                    <button onClick={() => handleSend()} disabled={!input.trim() && !attachments.length} className="p-3 bg-gradient-to-r from-purple-600 to-yellow-500 rounded-full text-white hover:scale-105 transition-transform disabled:opacity-50 disabled:hover:scale-100">
                         <svg className="w-6 h-6 rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>
                     </button>
                 )}
