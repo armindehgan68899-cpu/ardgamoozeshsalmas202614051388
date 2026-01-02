@@ -39,7 +39,7 @@ export const streamResponse = async (
     signal?: AbortSignal
 ): Promise<{ text: string, sources: any[], steps?: string }> => {
     const ai = getClient(settings.apiKey);
-    
+
     // Prepare history
     const contents = history.map(msg => {
         const parts: any[] = [];
@@ -50,7 +50,12 @@ export const streamResponse = async (
                 if (att.content) {
                     parts.push({ text: `\n--- FILE: ${att.name} ---\n${att.content}\n--- END FILE ---\n` });
                 } else {
-                    parts.push({ inlineData: { mimeType: att.mimeType, data: att.data } });
+                    parts.push({
+                        inlineData: {
+                            mimeType: att.mimeType,
+                            data: att.data
+                        }
+                    });
                 }
             });
         }
@@ -63,46 +68,48 @@ export const streamResponse = async (
         tools.push({ googleSearch: {} });
     }
 
-    const chat = ai.chats.create({
+    const model = ai.getGenerativeModel({
         model: settings.model || TEXT_MODEL,
-        config: {
-            systemInstruction,
+        systemInstruction,
+        generationConfig: {
             temperature: settings.temperature,
-            tools: tools,
         },
+        tools: tools,
+    });
+
+    const chat = model.startChat({
         history: contents.slice(0, -1) // All except last
     });
 
     const lastMsg = contents[contents.length - 1];
-    
+
     try {
-        const result = await chat.sendMessageStream({ 
-            message: lastMsg.parts 
-        });
+        const result = await chat.sendMessageStream(lastMsg.parts);
 
         let fullText = "";
         let sources: any[] = [];
-        
-        for await (const chunk of result) {
+
+        for await (const chunk of result.stream) {
             if (signal?.aborted) break;
-            
-            const text = chunk.text;
-            if (text) {
-                fullText += text;
-                onChunk(text);
-            }
-            
-            // Extract grounding (Search results)
-            const grounding = chunk.candidates?.[0]?.groundingMetadata;
-            if (grounding?.groundingChunks) {
-                grounding.groundingChunks.forEach((c: any) => {
-                    if (c.web?.uri) {
-                        sources.push({ title: c.web.title || "منبع وب", uri: c.web.uri });
-                    }
-                });
+
+            const chunkText = chunk.text();
+            if (chunkText) {
+                fullText += chunkText;
+                onChunk(chunkText);
             }
         }
-        
+
+        // Get final response for sources
+        const response = await result.response;
+        const grounding = response.candidates?.[0]?.groundingMetadata;
+        if (grounding?.groundingChunks) {
+            grounding.groundingChunks.forEach((c: any) => {
+                if (c.web?.uri) {
+                    sources.push({ title: c.web.title || "منبع وب", uri: c.web.uri });
+                }
+            });
+        }
+
         // Dedup sources
         sources = sources.filter((v,i,a)=>a.findIndex(t=>(t.uri===v.uri))===i);
 
@@ -120,13 +127,10 @@ export const streamResponse = async (
 export const generateImage = async (prompt: string, settings: AppSettings): Promise<string> => {
     const ai = getClient(settings.apiKey);
     try {
-        const response = await ai.models.generateContent({
-            model: IMAGE_MODEL,
-            contents: { parts: [{ text: prompt }] },
-            config: {} // defaults
-        });
+        const model = ai.getGenerativeModel({ model: IMAGE_MODEL });
+        const response = await model.generateContent(prompt);
 
-        const parts = response.candidates?.[0]?.content?.parts;
+        const parts = response.response.candidates?.[0]?.content?.parts;
         if (parts) {
             for (const part of parts) {
                 if (part.inlineData) {
@@ -145,14 +149,14 @@ export const generateImageContent = async (prompt: string, settings: AppSettings
 };
 
 export const analyzeFile = async (
-    files: File[], 
-    prompt: string, 
-    model: string, 
-    systemInstruction: string, 
+    files: File[],
+    prompt: string,
+    model: string,
+    systemInstruction: string,
     settings: AppSettings
 ): Promise<string> => {
     const ai = getClient(settings.apiKey);
-    
+
     const parts: any[] = [{ text: prompt }];
 
     for (const file of files) {
@@ -170,38 +174,37 @@ export const analyzeFile = async (
         }
     }
 
-    const response = await ai.models.generateContent({
+    const modelInstance = ai.getGenerativeModel({
         model: model || TEXT_MODEL,
-        contents: { parts },
-        config: { systemInstruction }
+        systemInstruction
     });
+    const response = await modelInstance.generateContent(parts);
 
-    return response.text || "تحلیلی دریافت نشد.";
+    return response.response.text() || "تحلیلی دریافت نشد.";
 };
 
 export const analyzeImage = async (file: File, prompt: string, model: string, settings: AppSettings): Promise<string> => {
     const ai = getClient(settings.apiKey);
     const base64 = await readFileBase64(file);
-    
-    const response = await ai.models.generateContent({
-        model: VISION_MODEL,
-        contents: {
-            parts: [
-                { inlineData: { mimeType: file.type, data: base64 } },
-                { text: prompt }
-            ]
-        }
-    });
-    
-    return response.text || "توضیحی دریافت نشد.";
+
+    const modelInstance = ai.getGenerativeModel({ model: VISION_MODEL });
+    const response = await modelInstance.generateContent([
+        {
+            inlineData: {
+                mimeType: file.type,
+                data: base64
+            }
+        },
+        { text: prompt }
+    ]);
+
+    return response.response.text() || "توضیحی دریافت نشد.";
 };
 
 export const explainStepByStep = async (question: string, answer: string, settings: AppSettings): Promise<string> => {
     const ai = getClient(settings.apiKey);
     const prompt = `Question: ${question}\nYour Answer: ${answer}\n\nExplain the logic step-by-step in detail (Persian).`;
-    const response = await ai.models.generateContent({
-        model: settings.model || TEXT_MODEL,
-        contents: prompt
-    });
-    return response.text || "توضیحی موجود نیست.";
+    const model = ai.getGenerativeModel({ model: settings.model || TEXT_MODEL });
+    const response = await model.generateContent(prompt);
+    return response.response.text() || "توضیحی موجود نیست.";
 };
