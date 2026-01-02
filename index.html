@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Armin AI - هوش مصنوعی ماورایی</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@100;300;400;500;700;900&display=swap" rel="stylesheet">
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Vazirmatn', 'sans-serif'],
+              mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', "Liberation Mono", "Courier New", 'monospace'],
+            },
+            colors: {
+              armin: {
+                primary: '#7c3aed', // Violet 600
+                secondary: '#f59e0b', // Amber 500
+                accent: '#06b6d4', // Cyan 500
+                dark: '#020617', // Slate 950
+                glass: 'rgba(15, 23, 42, 0.6)',
+              }
+            },
+            animation: {
+                'slide-up': 'slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                'fade-in': 'fadeIn 0.3s ease-out forwards',
+                'pulse-glow': 'pulseGlow 2s infinite',
+                'spin-slow': 'spin 3s linear infinite',
+            },
+            keyframes: {
+                slideUp: {
+                    '0%': { transform: 'translateY(20px)', opacity: '0' },
+                    '100%': { transform: 'translateY(0)', opacity: '1' },
+                },
+                fadeIn: {
+                    '0%': { opacity: '0' },
+                    '100%': { opacity: '1' },
+                },
+                pulseGlow: {
+                    '0%, 100%': { boxShadow: '0 0 10px #7c3aed' },
+                    '50%': { boxShadow: '0 0 20px #f59e0b' },
+                }
+            }
+          },
+        },
+      }
+    </script>
+    <style>
+      body {
+        font-family: 'Vazirmatn', sans-serif;
+        background-color: #020617;
+        color: #f8fafc;
+        overflow: hidden; /* App handles scroll */
+      }
+      /* Custom Scrollbar */
+      ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent; 
+      }
+      ::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.2); 
+        border-radius: 10px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.4); 
+      }
+      
+      .prose pre {
+        direction: ltr;
+        background: #1e1e1e;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        overflow-x: auto;
+      }
+      .math-display { overflow-x: auto; padding: 10px 0; }
+    </style>
+    <!-- MathJax Configuration -->
+    <script>
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          displayMath: [['$$', '$$'], ['\\[', '\\]']],
+          packages: ['base', 'ams', 'noerrors', 'noundefined']
+        },
+        options: {
+          ignoreHtmlClass: 'tex2jax_ignore',
+          processHtmlClass: 'tex2jax_process'
+        },
+        svg: {
+          fontCache: 'global'
+        },
+        startup: {
+            typeset: false 
+        }
+      };
+    </script>
+    <script type="text/javascript" id="MathJax-script" async
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script>
+  <script type="importmap">
+{
+  "imports": {
+    "@google/genai": "https://esm.sh/@google/genai@0.1.1",
+    "react": "https://esm.sh/react@18.2.0",
+    "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+    "react/jsx-runtime": "https://esm.sh/react@18.2.0/jsx-runtime",
+    "canvas-confetti": "https://esm.sh/canvas-confetti@1.9.2",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "react/": "https://esm.sh/react@^19.2.3/"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="./index.tsx"></script>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html>
